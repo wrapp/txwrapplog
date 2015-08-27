@@ -1,4 +1,4 @@
-pywrapplog
+txwrapplog
 ==========
 
 Changes to twisted.logger to work according to WEP 007:
