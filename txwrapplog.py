@@ -66,7 +66,7 @@ def wrapp_observer(obs):
     return wrapped
 
 
-def start_logging():
-    json = jsonFileLogObserver(sys.stdout)
+def start_logging(output=sys.stdout):
+    json = jsonFileLogObserver(output, recordSeparator='')
     wrapp = wrapp_observer(json)
     globalLogBeginner.beginLoggingTo([wrapp])
