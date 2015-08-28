@@ -6,6 +6,7 @@ from twisted.logger import ILogObserver, formatEvent, LogLevel, \
 from zope.interface import provider
 
 
+# Re-exported for convenience
 Logger = Logger
 
 
@@ -21,7 +22,9 @@ level_name = {
 }
 
 
-def wrapp_observer(obs):
+def wrapp_observer(output):
+    json = jsonFileLogObserver(output, recordSeparator='')
+
     @provider(ILogObserver)
     def wrapped(event):
         try:
@@ -37,35 +40,30 @@ def wrapp_observer(obs):
 
             new = OrderedDict([
                 ('level', level_name[event.pop('log_level')]),
-                ('msg', msg)
+                ('msg', msg),
             ])
 
-            # Process all keys of the event
+            if 'log_namespace' in event:
+                new['namespace'] = event.pop('log_namespace')
+
+            if 'log_system' in event:
+                new['system'] = event.pop('log_system')
+
+            # Keep all keys except the noise.
             for k, v in sorted(event.items()):
-
-                # Filter out noise
-                if k in noisey_keys:
-                    continue
-
-                # Keep these but rename them
-                elif k == 'log_namespace':
-                    k = 'namespace'
-                elif k == 'log_system':
-                    k = 'system'
-
-                new[k] = v
+                if k not in noisey_keys:
+                    new[k] = v
 
         except Exception as e:
             # Fallback to normal event processing
             new = event
             new['log_failure'] = str(e)
 
-        obs(new)
+        json(new)
 
     return wrapped
 
 
 def start_logging(output=sys.stdout):
-    json = jsonFileLogObserver(output, recordSeparator='')
-    wrapp = wrapp_observer(json)
+    wrapp = wrapp_observer(output)
     globalLogBeginner.beginLoggingTo([wrapp])
