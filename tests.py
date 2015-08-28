@@ -11,23 +11,23 @@ class TestWrappObserver(object):
 
     def test_debug(self):
         self.log.debug('Hello!')
-        self.assert_output('{"level": "debug", "msg": "Hello!", "namespace": "tests"}\n')
+        self.assert_output('DEBUG {"level": "debug", "msg": "Hello!", "namespace": "tests"}\n')
 
     def test_info(self):
         self.log.info('Hello!')
-        self.assert_output('{"level": "info", "msg": "Hello!", "namespace": "tests"}\n')
+        self.assert_output('INFO {"level": "info", "msg": "Hello!", "namespace": "tests"}\n')
 
     def test_warn(self):
         self.log.warn('Hello!')
-        self.assert_output('{"level": "warning", "msg": "Hello!", "namespace": "tests"}\n')
+        self.assert_output('WARNING {"level": "warning", "msg": "Hello!", "namespace": "tests"}\n')
 
     def test_error(self):
         self.log.error('Hello!')
-        self.assert_output('{"level": "error", "msg": "Hello!", "namespace": "tests"}\n')
+        self.assert_output('ERROR {"level": "error", "msg": "Hello!", "namespace": "tests"}\n')
 
     def test_critical(self):
         self.log.critical('Hello!')
-        self.assert_output('{"level": "error", "msg": "Hello!", "namespace": "tests"}\n')
+        self.assert_output('ERROR {"level": "error", "msg": "Hello!", "namespace": "tests"}\n')
 
     def test_failure(self):
         try:
@@ -35,7 +35,7 @@ class TestWrappObserver(object):
         except Exception:
             self.log.failure('Hello!')
         actual = self.get_output()
-        assert actual.startswith('{"level": "error", "msg": "Hello!", "namespace": "tests"')
+        assert actual.startswith('ERROR {"level": "error", "msg": "Hello!", "namespace": "tests"')
 
     def get_output(self):
         self.out.reset()
