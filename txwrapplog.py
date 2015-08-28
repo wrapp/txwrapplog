@@ -1,5 +1,6 @@
 import sys
 
+from collections import OrderedDict
 from twisted.logger import ILogObserver, formatEvent, LogLevel, \
         jsonFileLogObserver, Logger, globalLogBeginner
 from zope.interface import provider
@@ -16,7 +17,7 @@ level_name = {
     LogLevel.info: 'info',
     LogLevel.warn: 'warning',
     LogLevel.error: 'error',
-    LogLevel.critical: 'error',
+    LogLevel.critical: 'error', # wep-007 does not support critical
 }
 
 
@@ -34,19 +35,17 @@ def wrapp_observer(obs):
             else:
                 msg = formatEvent(event)
 
-            new = {'msg': msg}
+            new = OrderedDict([
+                ('level', level_name[event.pop('log_level')]),
+                ('msg', msg)
+            ])
 
             # Process all keys of the event
-            for k, v in event.items():
+            for k, v in sorted(event.items()):
 
                 # Filter out noise
                 if k in noisey_keys:
                     continue
-
-                # Normalize errors
-                elif k == 'log_level':
-                    k = 'level'
-                    v = level_name[v]
 
                 # Keep these but rename them
                 elif k == 'log_namespace':
