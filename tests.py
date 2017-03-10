@@ -1,3 +1,7 @@
+import json
+from mock import patch
+import collections
+from datetime import datetime
 from cStringIO import StringIO
 from txwrapplog import wrapp_observer, Logger
 
@@ -5,37 +9,54 @@ from txwrapplog import wrapp_observer, Logger
 
 
 class TestWrappObserver(object):
-    def setup(self):
+    @patch('txwrapplog._timestamp')
+    def setup(self, timestamp_mock):
+        self.timestamp = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        timestamp_mock.return_value = self.timestamp
+        self.msg = 'Hello'
+        self.service = "api"
+        self.host = "host-01"
         self.out = StringIO()
-        self.log = Logger(observer=wrapp_observer(self.out))
+        self.log = Logger(observer=wrapp_observer(self.out, service=self.service, host=self.host))
+
+    def _generate_output(self, level):
+        res = collections.OrderedDict()
+        res['level'] = level
+        res['msg'] = self.msg
+        res['host'] = self.host
+        res['service'] = self.service
+        res['timestamp'] = self.timestamp
+        res['namespace'] = 'tests'
+        return '%s %s\n' % (level.upper(), json.dumps(res))
 
     def test_debug(self):
-        self.log.debug('Hello!')
-        self.assert_output('DEBUG {"level": "debug", "msg": "Hello!", "namespace": "tests"}\n')
+        self.log.debug(self.msg)
+        self.assert_output(self._generate_output('debug'))
 
     def test_info(self):
-        self.log.info('Hello!')
-        self.assert_output('INFO {"level": "info", "msg": "Hello!", "namespace": "tests"}\n')
+        self.log.info(self.msg)
+        self.assert_output(self._generate_output('info'))
 
     def test_warn(self):
-        self.log.warn('Hello!')
-        self.assert_output('WARNING {"level": "warning", "msg": "Hello!", "namespace": "tests"}\n')
+        self.log.warn(self.msg)
+        self.assert_output(self._generate_output('warning'))
 
     def test_error(self):
-        self.log.error('Hello!')
-        self.assert_output('ERROR {"level": "error", "msg": "Hello!", "namespace": "tests"}\n')
+        self.log.error(self.msg)
+        self.assert_output(self._generate_output('error'))
 
     def test_critical(self):
-        self.log.critical('Hello!')
-        self.assert_output('ERROR {"level": "error", "msg": "Hello!", "namespace": "tests"}\n')
+        self.log.critical(self.msg)
+        self.assert_output(self._generate_output('error'))
 
     def test_failure(self):
         try:
             1/0
         except Exception:
-            self.log.failure('Hello!')
+            self.log.failure(self.msg)
         actual = self.get_output()
-        assert actual.startswith('ERROR {"level": "error", "msg": "Hello!", "namespace": "tests"')
+        expected_start = 'ERROR {"level": "error", "msg": "%s"' % (self.msg)
+        assert actual.startswith(expected_start)
 
     def get_output(self):
         self.out.reset()

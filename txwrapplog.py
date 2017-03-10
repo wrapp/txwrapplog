@@ -1,5 +1,6 @@
+import os
 import sys
-
+from datetime import datetime
 from collections import OrderedDict
 from twisted.logger import ILogObserver, formatEvent, LogLevel, \
         jsonFileLogObserver, Logger, globalLogBeginner
@@ -22,8 +23,10 @@ level_name = {
 }
 
 
-def wrapp_observer(output):
+def wrapp_observer(output, service=None, host=None):
     json = jsonFileLogObserver(output, recordSeparator='')
+    service = service or os.environ.get('SERVICE_NAME')
+    host = host or os.environ.get('HOSTNAME')
 
     @provider(ILogObserver)
     def wrapped(event):
@@ -41,6 +44,10 @@ def wrapp_observer(output):
             new = OrderedDict([
                 ('level', level_name[event.pop('log_level')]),
                 ('msg', msg),
+                ('host', host),
+                ('service', service),
+                ('timestamp', _timestamp())
+
             ])
 
             if 'log_namespace' in event:
@@ -63,6 +70,10 @@ def wrapp_observer(output):
         json(new)
 
     return wrapped
+
+
+def _timestamp():
+    return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def start_logging(output=sys.stdout):
