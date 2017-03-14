@@ -23,10 +23,9 @@ level_name = {
 }
 
 
-def wrapp_observer(output, service=None, host=None):
+def wrapp_observer(output, service=None):
     json = jsonFileLogObserver(output, recordSeparator='')
     service = service or os.environ.get('SERVICE_NAME')
-    host = host or os.environ.get('HOSTNAME')
 
     @provider(ILogObserver)
     def wrapped(event):
@@ -44,7 +43,6 @@ def wrapp_observer(output, service=None, host=None):
             new = OrderedDict([
                 ('level', level_name[event.pop('log_level')]),
                 ('msg', msg),
-                ('host', host),
                 ('service', service),
                 ('timestamp', _timestamp())
 
