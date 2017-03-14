@@ -25,7 +25,6 @@ level_name = {
 
 def wrapp_observer(output, service=None):
     json = jsonFileLogObserver(output, recordSeparator='')
-    service = service or os.environ.get('SERVICE_NAME')
 
     @provider(ILogObserver)
     def wrapped(event):
