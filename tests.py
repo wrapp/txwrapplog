@@ -25,7 +25,7 @@ class TestWrappObserver(object):
         res['service'] = self.service
         res['timestamp'] = self.timestamp
         res['namespace'] = 'tests'
-        return '%s %s\n' % (level.upper(), json.dumps(res))
+        return '%s\n' % (json.dumps(res))
 
     def test_debug(self):
         self.log.debug(self.msg)
@@ -53,7 +53,7 @@ class TestWrappObserver(object):
         except Exception:
             self.log.failure(self.msg)
         actual = self.get_output()
-        expected_start = 'ERROR {"level": "error", "msg": "%s"' % (self.msg)
+        expected_start = '{"level": "error", "msg": "%s"' % (self.msg)
         assert actual.startswith(expected_start)
 
     def get_output(self):

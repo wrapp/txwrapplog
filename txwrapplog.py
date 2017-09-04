@@ -64,7 +64,6 @@ def wrapp_observer(output, service=None):
             new = event
             new['log_failure'] = str(e)
 
-        output.write(new['level'].upper() + ' ')
         json(new)
 
     return wrapped
